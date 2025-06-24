@@ -14,6 +14,27 @@
   Official ElevenLabs <a href="https://github.com/modelcontextprotocol">Model Context Protocol (MCP)</a> server that enables interaction with powerful Text to Speech and audio processing APIs. This server allows MCP clients like <a href="https://www.anthropic.com/claude">Claude Desktop</a>, <a href="https://www.cursor.so">Cursor</a>, <a href="https://codeium.com/windsurf">Windsurf</a>, <a href="https://github.com/openai/openai-agents-python">OpenAI Agents</a> and others to generate speech, clone voices, transcribe audio, and more.
 </p>
 
+## 🚀 **NEW: Enhanced Conversational AI Capabilities**
+
+### ⚡ **CRITICAL: What We Added to the Original Server**
+
+This is an **ENHANCED VERSION** of the original ElevenLabs MCP server with **COMPLETELY NEW** conversational AI analysis capabilities:
+
+#### 🎤 **BRAND NEW Conversational AI Tools:**
+- ✨ **`list_conversations`** - **DIDN'T EXIST BEFORE**: Get comprehensive information about ALL your conversational AI calls with complete metadata, filtering, and pagination
+- ✨ **`get_conversation`** - **DIDN'T EXIST BEFORE**: Extract **FULL TRANSCRIPTS** with timestamps, speaker identification, and complete conversation analysis
+
+#### 📊 **Before vs. After:**
+- ❌ **Original Server**: No way to access conversation data or transcripts from conversational AI
+- ✅ **Enhanced Version**: Complete conversation analysis with full transcript extraction
+- ❌ **Original Server**: Basic conversational AI creation without data access  
+- ✅ **Enhanced Version**: Comprehensive conversation management and analysis tools
+
+#### 🔧 **Technical Enhancements:**
+- **Official Client Integration**: Replaced basic HTTP requests with official ElevenLabs Python SDK
+- **Comprehensive Error Handling**: Added robust API integration and fallback mechanisms
+- **Full API Coverage**: All conversational AI functionality now uses the official client library
+
 ## 🎯 Enhanced by YUV.AI
 
 **Special thanks to [Yuval Avidani](https://linktr.ee/yuvai) from YUV.AI** for the comprehensive enhancement of conversational AI capabilities!
@@ -34,11 +55,11 @@ Yuval significantly enhanced this MCP server with advanced conversational AI too
 - **Audio Isolation**: Isolate speech from background noise
 - **Voice Design**: Create and preview new synthetic voices
 
-### 🎤 Enhanced Conversational AI Tools
-Our conversational AI tools provide comprehensive access to all conversation data and transcriptions:
+### 🎤 **NEW: Conversational AI Analysis Tools** ⚡ **THESE ARE COMPLETELY NEW!**
+The following tools **DID NOT EXIST** in the original server and provide comprehensive access to all conversation data and transcriptions:
 
-#### `list_conversations`
-**Get comprehensive information about all conversational AI calls**
+#### `list_conversations` ⚡ **BRAND NEW TOOL**
+**Get comprehensive information about all conversational AI calls - THIS FUNCTIONALITY NEVER EXISTED BEFORE**
 - Lists all conversations with complete metadata
 - Filters by agent, time range, and success status
 - Shows conversation IDs, agent details, duration, message counts
@@ -51,8 +72,8 @@ Our conversational AI tools provide comprehensive access to all conversation dat
   - `call_start_before_unix`: Filter conversations before timestamp  
   - `call_successful`: Filter by success status (success/failure/unknown)
 
-#### `get_conversation`
-**Get complete conversation details including full transcriptions**
+#### `get_conversation` ⚡ **BRAND NEW TOOL**
+**Get complete conversation details including full transcriptions - TRANSCRIPT ACCESS NEVER EXISTED BEFORE**
 - Retrieves comprehensive conversation information
 - **Full transcript extraction** with timestamps and speaker identification
 - Audio availability information (user audio, response audio)
@@ -67,9 +88,9 @@ Our conversational AI tools provide comprehensive access to all conversation dat
 **Example transcript output**:
 ```
 === FULL TRANSCRIPT (27 messages) ===
-[00:00] AGENT: Hi, I'm Sarah from Nile. Before we get started, who am I speaking with?
-[00:05] USER: Gerhard.
-[00:08] AGENT: Nice to meet you, Gerhard. Could you briefly describe your role...
+[00:00] AGENT: Hi, I'm Sarah. Before we get started, who am I speaking with?
+[00:05] USER: John.
+[00:08] AGENT: Nice to meet you, John. Could you briefly describe your role...
 ```
 
 ### Agent Management
@@ -148,7 +169,7 @@ set ELEVENLABS_API_KEY=your_actual_api_key_here
 
 ## 🎯 Usage Examples
 
-### Conversational AI Analysis
+### 🎤 NEW: Conversational AI Analysis (THESE TOOLS ARE BRAND NEW!)
 ```
 # List all recent conversations
 Use the list_conversations tool to see all conversational AI calls
@@ -198,7 +219,7 @@ The inspector will help you:
 This MCP server provides comprehensive coverage of the ElevenLabs API:
 
 ### ✅ Fully Implemented
-- **Conversational AI**: Complete conversation management and transcript access
+- **Conversational AI**: Complete conversation management and transcript access ⚡ **NEW ENHANCEMENT**
 - **Text-to-Speech**: All voice synthesis capabilities
 - **Speech-to-Text**: Audio transcription with diarization
 - **Voice Management**: Creation, cloning, and library access
@@ -206,12 +227,12 @@ This MCP server provides comprehensive coverage of the ElevenLabs API:
 - **Sound Effects**: Custom audio generation
 - **Audio Processing**: Isolation and enhancement
 
-### 🎯 Enhanced Features
-- **Official Client Integration**: Uses the official ElevenLabs Python SDK
-- **Comprehensive Transcripts**: Full conversation analysis with timestamps
-- **Advanced Filtering**: Multiple filter options for conversation search
-- **Error Handling**: Robust error handling and fallback mechanisms
-- **Windows Integration**: Optimized for Windows development environments
+### 🎯 Enhanced Features ⚡ **ALL NEW ENHANCEMENTS**
+- **Official Client Integration**: Uses the official ElevenLabs Python SDK (**NEW**)
+- **Comprehensive Transcripts**: Full conversation analysis with timestamps (**COMPLETELY NEW**)
+- **Advanced Filtering**: Multiple filter options for conversation search (**NEW**)
+- **Error Handling**: Robust error handling and fallback mechanisms (**ENHANCED**)
+- **Windows Integration**: Optimized for Windows development environments (**NEW**)
 
 ## 🐛 Troubleshooting
 
