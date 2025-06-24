@@ -978,15 +978,20 @@ def get_conversation(
     if hasattr(conversation, 'transcript') and conversation.transcript:
         output += f"\n=== FULL TRANSCRIPT ({len(conversation.transcript)} messages) ===\n"
         for i, msg in enumerate(conversation.transcript):
-            role = msg.get('role', 'unknown')
-            message = msg.get('message', '')
-            time_in_call = msg.get('time_in_call_secs', 0)
-            
-            # Format timestamp
-            minutes, seconds = divmod(time_in_call, 60)
-            time_str = f"{int(minutes):02d}:{int(seconds):02d}"
-            
-            output += f"[{time_str}] {role.upper()}: {message}\n"
+            try:
+                # ElevenLabs transcript objects are Pydantic models with direct attribute access
+                role = msg.role if hasattr(msg, 'role') else 'unknown'
+                message = msg.message if hasattr(msg, 'message') else ''
+                time_in_call = msg.time_in_call_secs if hasattr(msg, 'time_in_call_secs') else 0
+                
+                # Format timestamp
+                minutes, seconds = divmod(time_in_call, 60)
+                time_str = f"{int(minutes):02d}:{int(seconds):02d}"
+                
+                output += f"[{time_str}] {role.upper()}: {message}\n"
+            except Exception as e:
+                # Fallback: try to show raw message structure
+                output += f"Message {i}: {str(msg)[:200]}...\n"
     else:
         output += f"\n=== TRANSCRIPT ===\nNo transcript available yet.\n"
     

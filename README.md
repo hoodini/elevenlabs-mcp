@@ -14,113 +14,263 @@
   Official ElevenLabs <a href="https://github.com/modelcontextprotocol">Model Context Protocol (MCP)</a> server that enables interaction with powerful Text to Speech and audio processing APIs. This server allows MCP clients like <a href="https://www.anthropic.com/claude">Claude Desktop</a>, <a href="https://www.cursor.so">Cursor</a>, <a href="https://codeium.com/windsurf">Windsurf</a>, <a href="https://github.com/openai/openai-agents-python">OpenAI Agents</a> and others to generate speech, clone voices, transcribe audio, and more.
 </p>
 
-## Quickstart with Claude Desktop
+## 🎯 Enhanced by YUV.AI
 
-1. Get your API key from [ElevenLabs](https://elevenlabs.io/app/settings/api-keys). There is a free tier with 10k credits per month.
-2. Install `uv` (Python package manager), install with `curl -LsSf https://astral.sh/uv/install.sh | sh` or see the `uv` [repo](https://github.com/astral-sh/uv) for additional install methods.
-3. Go to Claude > Settings > Developer > Edit Config > claude_desktop_config.json to include the following:
+**Special thanks to [Yuval Avidani](https://linktr.ee/yuvai) from YUV.AI** for the comprehensive enhancement of conversational AI capabilities!
 
+- **Developer**: Yuval Avidani  
+- **Company**: YUV.AI  
+- **Links**: [Linktree](https://linktr.ee/yuvai) | [X/Twitter](https://x.com/yuvalav) | [Instagram](https://instagram.com/yuval_770)
+
+Yuval significantly enhanced this MCP server with advanced conversational AI tools that provide complete conversation analysis, comprehensive transcriptions, and detailed metadata extraction using the official ElevenLabs client library.
+
+## 🚀 Features
+
+### Core Audio Tools
+- **Text-to-Speech**: Convert text to high-quality speech with customizable voice settings
+- **Speech-to-Text**: Transcribe audio files with speaker diarization support
+- **Voice Cloning**: Create instant voice clones from audio samples
+- **Sound Effects**: Generate custom sound effects from text descriptions
+- **Audio Isolation**: Isolate speech from background noise
+- **Voice Design**: Create and preview new synthetic voices
+
+### 🎤 Enhanced Conversational AI Tools
+Our conversational AI tools provide comprehensive access to all conversation data and transcriptions:
+
+#### `list_conversations`
+**Get comprehensive information about all conversational AI calls**
+- Lists all conversations with complete metadata
+- Filters by agent, time range, and success status
+- Shows conversation IDs, agent details, duration, message counts
+- Supports pagination with cursor-based navigation
+- **Parameters**:
+  - `agent_id`: Filter by specific agent
+  - `cursor`: Pagination cursor
+  - `page_size`: Results per page (1-100, default 30)
+  - `call_start_after_unix`: Filter conversations after timestamp
+  - `call_start_before_unix`: Filter conversations before timestamp  
+  - `call_successful`: Filter by success status (success/failure/unknown)
+
+#### `get_conversation`
+**Get complete conversation details including full transcriptions**
+- Retrieves comprehensive conversation information
+- **Full transcript extraction** with timestamps and speaker identification
+- Audio availability information (user audio, response audio)
+- Conversation metadata (duration, start time, status)
+- Automatic analysis and sentiment data when available
+- Smart waiting for conversation completion
+- **Parameters**:
+  - `conversation_id`: The conversation ID to retrieve
+  - `wait_for_completion`: Wait for ongoing conversations (default True)
+  - `max_wait_seconds`: Maximum wait time in seconds (default 300)
+
+**Example transcript output**:
 ```
-{
-  "mcpServers": {
-    "ElevenLabs": {
-      "command": "uvx",
-      "args": ["elevenlabs-mcp"],
-      "env": {
-        "ELEVENLABS_API_KEY": "<insert-your-api-key-here>"
-      }
-    }
-  }
-}
-
+=== FULL TRANSCRIPT (27 messages) ===
+[00:00] AGENT: Hi, I'm Sarah from Nile. Before we get started, who am I speaking with?
+[00:05] USER: Gerhard.
+[00:08] AGENT: Nice to meet you, Gerhard. Could you briefly describe your role...
 ```
 
-If you're using Windows, you will have to enable "Developer Mode" in Claude Desktop to use the MCP server. Click "Help" in the hamburger menu at the top left and select "Enable Developer Mode".
+### Agent Management
+- **Create Agents**: Set up conversational AI agents with custom prompts and voices
+- **List Agents**: View all available conversational AI agents
+- **Agent Details**: Get comprehensive agent configuration and status
 
-## Other MCP clients
+### Voice Management
+- **Voice Library**: Search and browse the complete ElevenLabs voice library
+- **Voice Search**: Find voices by name, description, and categories
+- **Voice Details**: Get detailed information about specific voices
+- **Voice Creation**: Generate new voices from text descriptions
 
-For other clients like Cursor and Windsurf, run:
-1. `pip install elevenlabs-mcp`
-2. `python -m elevenlabs_mcp --api-key={{PUT_YOUR_API_KEY_HERE}} --print` to get the configuration. Paste it into appropriate configuration directory specified by your MCP client.
+### Advanced Features
+- **Phone Integration**: Make outbound calls via Twilio
+- **Knowledge Base**: Add documentation and context to agents
+- **Subscription Management**: Monitor API usage and limits
+- **Audio Playback**: Play generated audio files locally
 
-That's it. Your MCP client can now interact with ElevenLabs through these tools:
+## 🔧 Transport Protocol
 
-## Example usage
+This MCP server uses **STDIO transport**, providing real-time communication with MCP clients like Claude Desktop through standard input/output streams.
 
-⚠️ Warning: ElevenLabs credits are needed to use these tools.
+## 📋 Prerequisites
 
-Try asking Claude:
+- **Python 3.11+** (Required by ElevenLabs SDK)
+- **ElevenLabs API Key** (Get one at [elevenlabs.io](https://elevenlabs.io))
+- **Windows** (Batch scripts included for Windows)
 
-- "Create an AI agent that speaks like a film noir detective and can answer questions about classic movies"
-- "Generate three voice variations for a wise, ancient dragon character, then I will choose my favorite voice to add to my voice library"
-- "Convert this recording of my voice to sound like a medieval knight"
-- "Create a soundscape of a thunderstorm in a dense jungle with animals reacting to the weather"
-- "Turn this speech into text, identify different speakers, then convert it back using unique voices for each person"
+## 🛠️ Installation
 
-## Optional features
-
-You can add the `ELEVENLABS_MCP_BASE_PATH` environment variable to the `claude_desktop_config.json` to specify the base path MCP server should look for and output files specified with relative paths.
-
-## Contributing
-
-If you want to contribute or run from source:
-
-1. Clone the repository:
-
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/elevenlabs/elevenlabs-mcp
+git clone https://github.com/hoodini/elevenlabs-mcp.git
 cd elevenlabs-mcp
 ```
 
-2. Create a virtual environment and install dependencies [using uv](https://github.com/astral-sh/uv):
-
+### 2. Set Up Virtual Environment
 ```bash
-uv venv
-source .venv/bin/activate
-uv pip install -e ".[dev]"
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
 ```
 
-3. Copy `.env.example` to `.env` and add your ElevenLabs API key:
-
+### 3. Install Dependencies
 ```bash
-cp .env.example .env
-# Edit .env and add your API key
+pip install -e .
 ```
 
-4. Run the tests to make sure everything is working:
+### 4. Configure Claude Desktop
 
-```bash
-./scripts/test.sh
-# Or with options
-./scripts/test.sh --verbose --fail-fast
+Add to your Claude Desktop configuration file:
+
+**Location**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "ElevenLabs": {
+      "command": "C:\\path\\to\\elevenlabs-mcp\\run_mcp_server.bat",
+      "args": [],
+      "cwd": "C:\\path\\to\\elevenlabs-mcp"
+    }
+  }
+}
 ```
 
-5. Install the server in Claude Desktop: `mcp install elevenlabs_mcp/server.py`
+Replace `C:\\path\\to\\elevenlabs-mcp` with your actual project path.
 
-6. Debug and test locally with MCP Inspector: `mcp dev elevenlabs_mcp/server.py`
+### 5. Set Your API Key
 
-## Troubleshooting
-
-Logs when running with Claude Desktop can be found at:
-
-- **Windows**: `%APPDATA%\Claude\logs\mcp-server-elevenlabs.log`
-- **macOS**: `~/Library/Logs/Claude/mcp-server-elevenlabs.log`
-
-### Timeouts when using certain tools
-
-Certain ElevenLabs API operations, like voice design and audio isolation, can take a long time to resolve. When using the MCP inspector in dev mode, you might get timeout errors despite the tool completing its intended task.
-
-This shouldn't occur when using a client like Claude.
-
-### MCP ElevenLabs: spawn uvx ENOENT
-
-If you encounter the error "MCP ElevenLabs: spawn uvx ENOENT", confirm its absolute path by running this command in your terminal:
-
-```bash
-which uvx
+Edit `run_mcp_server.bat` and replace the API key:
+```batch
+set ELEVENLABS_API_KEY=your_actual_api_key_here
 ```
 
-Once you obtain the absolute path (e.g., `/usr/local/bin/uvx`), update your configuration to use that path (e.g., `"command": "/usr/local/bin/uvx"`). This ensures that the correct executable is referenced.
+## 🎯 Usage Examples
+
+### Conversational AI Analysis
+```
+# List all recent conversations
+Use the list_conversations tool to see all conversational AI calls
+
+# Get detailed conversation with full transcript
+Use get_conversation with a specific conversation_id to see:
+- Complete conversation transcript with timestamps
+- Audio availability information  
+- Call metadata and duration
+- Success/failure status
+```
+
+### Text-to-Speech
+```
+# Convert text to speech
+Use text_to_speech with your text and preferred voice
+
+# Custom voice settings
+Adjust stability, similarity_boost, and speed parameters
+```
+
+### Voice Cloning
+```
+# Clone a voice from audio files
+Use voice_clone with audio file paths and description
+
+# Create voice from text description
+Use text_to_voice to generate voice previews
+```
+
+## 🔍 MCP Inspector
+
+Test your server setup with the MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector@latest
+```
+
+The inspector will help you:
+- Verify server connection
+- Test individual tools
+- Debug configuration issues
+- Explore tool capabilities
+
+## 📊 API Coverage
+
+This MCP server provides comprehensive coverage of the ElevenLabs API:
+
+### ✅ Fully Implemented
+- **Conversational AI**: Complete conversation management and transcript access
+- **Text-to-Speech**: All voice synthesis capabilities
+- **Speech-to-Text**: Audio transcription with diarization
+- **Voice Management**: Creation, cloning, and library access
+- **Agent Management**: Full conversational AI agent lifecycle
+- **Sound Effects**: Custom audio generation
+- **Audio Processing**: Isolation and enhancement
+
+### 🎯 Enhanced Features
+- **Official Client Integration**: Uses the official ElevenLabs Python SDK
+- **Comprehensive Transcripts**: Full conversation analysis with timestamps
+- **Advanced Filtering**: Multiple filter options for conversation search
+- **Error Handling**: Robust error handling and fallback mechanisms
+- **Windows Integration**: Optimized for Windows development environments
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**"Module not found" errors**:
+- Ensure you're using the correct virtual environment
+- Verify Python 3.11+ is installed
+- Run `pip install -e .` in the project directory
+
+**MCP connection issues**:
+- Check that the batch file path is correct in Claude config
+- Verify API key is set in the batch file
+- Ensure no spaces in file paths cause parsing issues
+
+**Transcript not showing**:
+- Verify conversation is completed (`status: done`)
+- Check that the conversation has audio content
+- Some conversations may not have transcripts available immediately
+
+## 📝 Development
+
+### Building the Package
+```bash
+python -m build
+```
+
+### Running Tests
+```bash
+python -m pytest tests/
+```
+
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and build
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **ElevenLabs** for their excellent AI audio platform and API
+- **Anthropic** for the Model Context Protocol specification
+- **YUV.AI & Yuval Avidani** for the comprehensive conversational AI enhancements
+
+## 🔗 Links
+
+- [ElevenLabs API Documentation](https://elevenlabs.io/docs)
+- [Model Context Protocol](https://modelcontextprotocol.io)
+- [YUV.AI Linktree](https://linktr.ee/yuvai)
+- [Yuval Avidani X/Twitter](https://x.com/yuvalav)
+
+---
+
+**Made with ❤️ by the community, enhanced by YUV.AI**
 
 
 
