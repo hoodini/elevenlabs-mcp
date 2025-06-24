@@ -837,9 +837,10 @@ def play_audio(input_file_path: str) -> TextContent:
     Args:
         agent_id: Filter conversations by specific agent ID
         cursor: Pagination cursor for getting more results
-        limit: Maximum number of conversations to return (1-100, default 20)
+        page_size: Maximum number of conversations to return (1-100, default 30)
         call_start_after_unix: Unix timestamp to filter conversations that started after this time
         call_start_before_unix: Unix timestamp to filter conversations that started before this time
+        call_successful: Filter by call success status (success/failure/unknown)
     
     Returns:
         Comprehensive information about conversations including IDs, agent info, status, metadata, audio availability, etc.
@@ -848,19 +849,21 @@ def play_audio(input_file_path: str) -> TextContent:
 def list_conversations(
     agent_id: str | None = None,
     cursor: str | None = None,
-    limit: int = 20,
+    page_size: int = 30,
     call_start_after_unix: int | None = None,
     call_start_before_unix: int | None = None,
+    call_successful: str | None = None,
 ) -> TextContent:
     """List conversations with comprehensive information using the official ElevenLabs client."""
     try:
-        # Use the official ElevenLabs client method
+        # Use the official ElevenLabs client method with correct parameter names
         response = client.conversational_ai.conversations.list(
             agent_id=agent_id,
             cursor=cursor,
-            limit=limit,
+            page_size=page_size,
             call_start_after_unix=call_start_after_unix,
             call_start_before_unix=call_start_before_unix,
+            call_successful=call_successful,
         )
         
         conversations = response.conversations
@@ -871,36 +874,30 @@ def list_conversations(
         for conv in conversations:
             output += f"=== CONVERSATION {conv.conversation_id} ===\n"
             output += f"Agent ID: {conv.agent_id}\n"
+            output += f"Agent Name: {getattr(conv, 'agent_name', 'N/A')}\n"
             output += f"Status: {conv.status}\n"
             
-            # Metadata information
-            if hasattr(conv, 'metadata') and conv.metadata:
-                output += f"Start Time: {datetime.fromtimestamp(conv.metadata.start_time_unix_secs) if conv.metadata.start_time_unix_secs else 'N/A'}\n"
-                output += f"Call Duration: {conv.metadata.call_duration_secs} seconds\n"
+            # Timing information (from the list response)
+            if hasattr(conv, 'start_time_unix_secs'):
+                start_time = datetime.fromtimestamp(conv.start_time_unix_secs) if conv.start_time_unix_secs else 'N/A'
+                output += f"Start Time: {start_time}\n"
             
-            # Audio availability
-            output += f"Has Audio: {getattr(conv, 'has_audio', 'N/A')}\n"
-            output += f"Has User Audio: {getattr(conv, 'has_user_audio', 'N/A')}\n"
-            output += f"Has Response Audio: {getattr(conv, 'has_response_audio', 'N/A')}\n"
-            
-            # Transcript preview (first few messages)
-            if hasattr(conv, 'transcript') and conv.transcript:
-                output += f"Transcript Preview ({len(conv.transcript)} messages):\n"
-                for i, msg in enumerate(conv.transcript[:3]):  # Show first 3 messages
-                    role = msg.get('role', 'unknown')
-                    message = msg.get('message', '')
-                    time_in_call = msg.get('time_in_call_secs', 0)
-                    output += f"  [{time_in_call}s] {role}: {message[:100]}{'...' if len(message) > 100 else ''}\n"
-                if len(conv.transcript) > 3:
-                    output += f"  ... and {len(conv.transcript) - 3} more messages\n"
-            else:
-                output += "Transcript: Not available yet\n"
+            if hasattr(conv, 'call_duration_secs'):
+                output += f"Call Duration: {conv.call_duration_secs} seconds\n"
+                
+            if hasattr(conv, 'message_count'):
+                output += f"Message Count: {conv.message_count}\n"
+                
+            if hasattr(conv, 'call_successful'):
+                output += f"Call Successful: {conv.call_successful}\n"
             
             output += "\n"
         
         # Pagination info
-        if hasattr(response, 'cursor') and response.cursor:
-            output += f"Next page cursor: {response.cursor}\n"
+        if hasattr(response, 'has_more') and response.has_more:
+            output += f"Has more results: {response.has_more}\n"
+        if hasattr(response, 'next_cursor') and response.next_cursor:
+            output += f"Next page cursor: {response.next_cursor}\n"
         
         if not conversations:
             output = "No conversations found with the specified filters.\n"
@@ -966,8 +963,10 @@ def get_conversation(
     # Metadata information
     if hasattr(conversation, 'metadata') and conversation.metadata:
         output += f"\n=== METADATA ===\n"
-        output += f"Start Time: {datetime.fromtimestamp(conversation.metadata.start_time_unix_secs)}\n"
-        output += f"Call Duration: {conversation.metadata.call_duration_secs} seconds\n"
+        if hasattr(conversation.metadata, 'start_time_unix_secs') and conversation.metadata.start_time_unix_secs:
+            output += f"Start Time: {datetime.fromtimestamp(conversation.metadata.start_time_unix_secs)}\n"
+        if hasattr(conversation.metadata, 'call_duration_secs'):
+            output += f"Call Duration: {conversation.metadata.call_duration_secs} seconds\n"
     
     # Audio availability information
     output += f"\n=== AUDIO AVAILABILITY ===\n"
