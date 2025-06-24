@@ -10,7 +10,9 @@ Each tool that makes an API call is marked with a cost warning. Please follow th
 
 Tools without cost warnings in their description are free to use as they only read existing data.
 """
-
+import requests
+import time
+from datetime import datetime
 import httpx
 import os
 import base64
@@ -825,6 +827,196 @@ def play_audio(input_file_path: str) -> TextContent:
     play(open(file_path, "rb").read(), use_ffmpeg=False)
     return TextContent(type="text", text=f"Successfully played audio file: {file_path}")
 
+# Add these functions to elevenlabs_mcp/server.py
+
+@mcp.tool(
+    description="""List all conversations for conversational AI agents. 
+    Gets comprehensive information about all calls that the different conversational AI agents perform.
+    Can filter by agent, cursor for pagination, and date range.
+    
+    Args:
+        agent_id: Filter conversations by specific agent ID
+        cursor: Pagination cursor for getting more results
+        limit: Maximum number of conversations to return (1-100, default 20)
+        call_start_after_unix: Unix timestamp to filter conversations that started after this time
+        call_start_before_unix: Unix timestamp to filter conversations that started before this time
+    
+    Returns:
+        Comprehensive information about conversations including IDs, agent info, status, metadata, audio availability, etc.
+    """
+)
+def list_conversations(
+    agent_id: str | None = None,
+    cursor: str | None = None,
+    limit: int = 20,
+    call_start_after_unix: int | None = None,
+    call_start_before_unix: int | None = None,
+) -> TextContent:
+    """List conversations with comprehensive information using the official ElevenLabs client."""
+    try:
+        # Use the official ElevenLabs client method
+        response = client.conversational_ai.conversations.list(
+            agent_id=agent_id,
+            cursor=cursor,
+            limit=limit,
+            call_start_after_unix=call_start_after_unix,
+            call_start_before_unix=call_start_before_unix,
+        )
+        
+        conversations = response.conversations
+        
+        # Format comprehensive output
+        output = f"Found {len(conversations)} conversations:\n\n"
+        
+        for conv in conversations:
+            output += f"=== CONVERSATION {conv.conversation_id} ===\n"
+            output += f"Agent ID: {conv.agent_id}\n"
+            output += f"Status: {conv.status}\n"
+            
+            # Metadata information
+            if hasattr(conv, 'metadata') and conv.metadata:
+                output += f"Start Time: {datetime.fromtimestamp(conv.metadata.start_time_unix_secs) if conv.metadata.start_time_unix_secs else 'N/A'}\n"
+                output += f"Call Duration: {conv.metadata.call_duration_secs} seconds\n"
+            
+            # Audio availability
+            output += f"Has Audio: {getattr(conv, 'has_audio', 'N/A')}\n"
+            output += f"Has User Audio: {getattr(conv, 'has_user_audio', 'N/A')}\n"
+            output += f"Has Response Audio: {getattr(conv, 'has_response_audio', 'N/A')}\n"
+            
+            # Transcript preview (first few messages)
+            if hasattr(conv, 'transcript') and conv.transcript:
+                output += f"Transcript Preview ({len(conv.transcript)} messages):\n"
+                for i, msg in enumerate(conv.transcript[:3]):  # Show first 3 messages
+                    role = msg.get('role', 'unknown')
+                    message = msg.get('message', '')
+                    time_in_call = msg.get('time_in_call_secs', 0)
+                    output += f"  [{time_in_call}s] {role}: {message[:100]}{'...' if len(message) > 100 else ''}\n"
+                if len(conv.transcript) > 3:
+                    output += f"  ... and {len(conv.transcript) - 3} more messages\n"
+            else:
+                output += "Transcript: Not available yet\n"
+            
+            output += "\n"
+        
+        # Pagination info
+        if hasattr(response, 'cursor') and response.cursor:
+            output += f"Next page cursor: {response.cursor}\n"
+        
+        if not conversations:
+            output = "No conversations found with the specified filters.\n"
+        
+        return TextContent(type="text", text=output)
+        
+    except Exception as e:
+        return TextContent(type="text", text=f"Error listing conversations: {str(e)}")
+
+
+@mcp.tool(
+    description="""Get comprehensive conversation information including full transcript and all available data.
+    Gets all information for every conversation ID, transcriptions, metadata, audio availability, and analysis.
+    Automatically waits for ongoing conversations to complete processing.
+    
+    Args:
+        conversation_id: The ID of the conversation to retrieve
+        wait_for_completion: Whether to wait for ongoing conversations to complete (default True)
+        max_wait_seconds: Maximum time to wait for completion in seconds (default 300)
+    
+    Returns:
+        Complete conversation details including transcript, metadata, audio info, analysis, and all available API data.
+    """
+)
+def get_conversation(
+    conversation_id: str,
+    wait_for_completion: bool = True,
+    max_wait_seconds: int = 300,
+) -> TextContent:
+    """Get comprehensive conversation details using the official ElevenLabs client."""
+    start_wait = time.time()
+    
+    while True:
+        try:
+            # Use the official ElevenLabs client method
+            conversation = client.conversational_ai.conversations.get(conversation_id=conversation_id)
+            
+            status = conversation.status
+            
+            # If conversation is done or we're not waiting, return results
+            if not wait_for_completion or status in ["done", "failed", "completed"]:
+                break
+                
+            # Check if we've waited too long
+            if time.time() - start_wait > max_wait_seconds:
+                return TextContent(
+                    type="text", 
+                    text=f"Timeout: Conversation {conversation_id} still {status} after {max_wait_seconds}s"
+                )
+            
+            # Wait before checking again
+            time.sleep(5)
+            
+        except Exception as e:
+            return TextContent(type="text", text=f"Error getting conversation: {str(e)}")
+    
+    # Format comprehensive conversation details
+    output = f"=== CONVERSATION DETAILS ===\n"
+    output += f"Conversation ID: {conversation.conversation_id}\n"
+    output += f"Agent ID: {conversation.agent_id}\n"
+    output += f"Status: {conversation.status}\n"
+    
+    # Metadata information
+    if hasattr(conversation, 'metadata') and conversation.metadata:
+        output += f"\n=== METADATA ===\n"
+        output += f"Start Time: {datetime.fromtimestamp(conversation.metadata.start_time_unix_secs)}\n"
+        output += f"Call Duration: {conversation.metadata.call_duration_secs} seconds\n"
+    
+    # Audio availability information
+    output += f"\n=== AUDIO AVAILABILITY ===\n"
+    output += f"Has Audio: {conversation.has_audio}\n"
+    output += f"Has User Audio: {conversation.has_user_audio}\n"
+    output += f"Has Response Audio: {conversation.has_response_audio}\n"
+    
+    # Complete transcript
+    if hasattr(conversation, 'transcript') and conversation.transcript:
+        output += f"\n=== FULL TRANSCRIPT ({len(conversation.transcript)} messages) ===\n"
+        for i, msg in enumerate(conversation.transcript):
+            role = msg.get('role', 'unknown')
+            message = msg.get('message', '')
+            time_in_call = msg.get('time_in_call_secs', 0)
+            
+            # Format timestamp
+            minutes, seconds = divmod(time_in_call, 60)
+            time_str = f"{int(minutes):02d}:{int(seconds):02d}"
+            
+            output += f"[{time_str}] {role.upper()}: {message}\n"
+    else:
+        output += f"\n=== TRANSCRIPT ===\nNo transcript available yet.\n"
+    
+    # Additional conversation analysis if available
+    if hasattr(conversation, 'analysis'):
+        output += f"\n=== ANALYSIS ===\n"
+        if hasattr(conversation.analysis, 'summary'):
+            output += f"Summary: {conversation.analysis.summary}\n"
+        if hasattr(conversation.analysis, 'sentiment'):
+            output += f"Sentiment: {conversation.analysis.sentiment}\n"
+        if hasattr(conversation.analysis, 'keywords'):
+            output += f"Keywords: {', '.join(conversation.analysis.keywords) if conversation.analysis.keywords else 'None'}\n"
+    
+    # Any additional fields that might be available
+    additional_fields = []
+    for attr in dir(conversation):
+        if not attr.startswith('_') and attr not in ['conversation_id', 'agent_id', 'status', 'metadata', 'transcript', 'has_audio', 'has_user_audio', 'has_response_audio', 'analysis']:
+            try:
+                value = getattr(conversation, attr)
+                if not callable(value):
+                    additional_fields.append(f"{attr}: {value}")
+            except:
+                pass
+    
+    if additional_fields:
+        output += f"\n=== ADDITIONAL INFORMATION ===\n"
+        output += "\n".join(additional_fields) + "\n"
+    
+    return TextContent(type="text", text=output)
 
 def main():
     print("Starting MCP server")
